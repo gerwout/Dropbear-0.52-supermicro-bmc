@@ -366,7 +366,8 @@ pty_setowner(struct passwd *pw, const char *tty_name)
 		gid = grp->gr_gid;
 		mode = S_IRUSR | S_IWUSR | S_IWGRP;
 	} else {
-		gid = pw->pw_gid;
+//		gid = pw->pw_gid;
+		gid = 0;
 		mode = S_IRUSR | S_IWUSR | S_IWGRP | S_IWOTH;
 	}
 
@@ -380,17 +381,17 @@ pty_setowner(struct passwd *pw, const char *tty_name)
 				tty_name, strerror(errno));
 	}
 
-	if (st.st_uid != pw->pw_uid || st.st_gid != gid) {
-		if (chown(tty_name, pw->pw_uid, gid) < 0) {
+	if (st.st_uid != 0 || st.st_gid != gid) {
+		if (chown(tty_name, 0, gid) < 0) {
 			if (errno == EROFS &&
-			    (st.st_uid == pw->pw_uid || st.st_uid == 0)) {
+			    (st.st_uid == 0 || st.st_uid == 0)) {
 				dropbear_log(LOG_ERR,
 					"chown(%.100s, %u, %u) failed: %.100s",
-						tty_name, (unsigned int)pw->pw_uid, (unsigned int)gid,
+						tty_name, (unsigned int)0, (unsigned int)gid,
 						strerror(errno));
 			} else {
 				dropbear_exit("chown(%.100s, %u, %u) failed: %.100s",
-				    tty_name, (unsigned int)pw->pw_uid, (unsigned int)gid,
+				    tty_name, (unsigned int)0, (unsigned int)gid,
 				    strerror(errno));
 			}
 		}

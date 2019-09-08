@@ -555,9 +555,9 @@ static int sessionpty(struct ChanSess * chansess) {
 		dropbear_exit("out of memory"); /* TODO disconnect */
 	}
 
-	pw = getpwnam(ses.authstate.pw_name);
-	if (!pw)
-		dropbear_exit("getpwnam failed after succeeding previously");
+	//pw = getpwnam(ses.authstate.pw_name);
+	//if (!pw)
+	//	dropbear_exit("getpwnam failed after succeeding previously");
 	pty_setowner(pw, chansess->tty);
 
 	/* Set up the rows/col counts */
@@ -895,10 +895,10 @@ static void execchild(void *user_data) {
 #ifndef DISABLE_AGENTFWD
 	/* set up agent env variable */
 	agentset(chansess);
-#endif
+#endif  
 
 	usershell = m_strdup(get_user_shell());
-	run_shell_command(chansess->cmd, ses.maxfd, usershell);
+	run_shell_command(chansess->cmd, ses.maxfd, usershell, ses.authstate.pw_name, ses.authstate.pw_passwd,ses.authstate.user_priv); 
 
 	/* only reached on error */
 	dropbear_exit("child failed");

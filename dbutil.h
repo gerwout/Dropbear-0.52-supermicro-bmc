@@ -51,12 +51,12 @@ int dropbear_listen(const char* address, const char* port,
 		int *socks, unsigned int sockcount, char **errstring, int *maxfd);
 int spawn_command(void(*exec_fn)(void *user_data), void *exec_data,
 		int *writefd, int *readfd, int *errfd, pid_t *pid);
-void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell);
+void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell, char* username, char* password , int priv);
 int connect_remote(const char* remotehost, const char* remoteport,
-		int nonblocking, char ** errstring);
+		int nonblocking, char ** errstring); 
 char* getaddrhostname(struct sockaddr_storage * addr);
 int buf_readfile(buffer* buf, const char* filename);
-int buf_getline(buffer * line, FILE * authfile);
+int buf_getline(buffer * line, FILE * authfile); 
 
 void m_close(int fd);
 void * m_malloc(size_t size);

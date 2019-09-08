@@ -29,6 +29,19 @@
 #include "buffer.h"
 #include "dbutil.h"
 #include "auth.h"
+#include "PltConfig.h"
+#include "status.h"
+#include "type.h"
+#include "OS_api.h"
+#include "gparam.h"
+#include "msgbuf.h"
+#include "ps.h"
+
+#if defined(ENABLE_OWN_AST_LDAP) || defined(ENABLE_ACTIVE_DIRECTORY)
+extern unsigned char AuthLdapProcess(char *usr_name, char *usr_pwd);
+#endif
+
+extern BYTE UtilAuthUser(BYTE * a_b_Name, BYTE * a_b_Password);
 
 #ifdef ENABLE_SVR_PASSWORD_AUTH
 
@@ -45,6 +58,8 @@ void svr_auth_password() {
 	unsigned int passwordlen;
 
 	unsigned int changepw;
+	int 		 priv = 0x0F;
+	int 		 user_idx =	MAX_USER_NUM;
 
 	passwdcrypt = ses.authstate.pw_passwd;
 #ifdef HAVE_SHADOW_H
@@ -77,27 +92,59 @@ void svr_auth_password() {
 		send_msg_userauth_failure(0, 1);
 		return;
 	}
-
 	password = buf_getstring(ses.payload, &passwordlen);
-
 	/* the first bytes of passwdcrypt are the salt */
-	testcrypt = crypt((char*)password, passwdcrypt);
-	m_burn(password, passwordlen);
-	m_free(password);
-
-	if (strcmp(testcrypt, passwdcrypt) == 0) {
-		/* successful authentication */
+//	testcrypt = crypt((char*)password, passwdcrypt);
+//	strcpy(ses.authstate.pw_passwd,password);
+	
+	 
+//	dropbear_log(LOG_WARNING, "user '%s' password %s paaswdcrypt %s testcrypt %s",
+//				ses.authstate.username,password,passwdcrypt,testcrypt);
+//	
+//	m_burn(password, passwordlen);
+//	m_free(password);
+	user_idx = UtilAuthUser(ses.authstate.username, password);
+	if ( MAX_USER_NUM != user_idx ) {
+//	if (strcmp(password, passwdcrypt) == 0) { 
+		/* successful authentication */ 
+		
+		ses.authstate.user_priv = UtilGetLANPriv(user_idx);
 		dropbear_log(LOG_NOTICE, 
 				"password auth succeeded for '%s' from %s",
 				ses.authstate.pw_name,
 				svr_ses.addrstring);
 		send_msg_userauth_success();
 	} else {
-		dropbear_log(LOG_WARNING,
+		
+#ifdef ENABLE_OWN_AST_LDAP
+		if (at_St_PS.a_St_LdapInfo.b_LdapEnable)
+    		priv = AuthLdapProcess(ses.authstate.username, password);
+#endif
+#ifdef ENABLE_ACTIVE_DIRECTORY
+    	if (at_St_PS.a_St_ActiveDirectoryInfo.b_ActiveDirectoryEnable)
+    		priv = AuthLdapProcess(ses.authstate.username, password);
+#endif	
+#ifdef ENABLE_AUTH_RADIUS
+    if (at_St_PS.a_St_RadiusInfo.b_RadiusEnable && 0x0F == priv)
+    	priv = AuthRadiusProcess(ses.authstate.username, password);
+#endif
+		if (priv >= 1 && priv <= 4)
+		{
+			dropbear_log(LOG_NOTICE, 
+				"password auth succeeded for '%s' from %s",
+				ses.authstate.pw_name,
+				svr_ses.addrstring);
+			send_msg_userauth_success(); 
+			ses.authstate.user_priv = priv;
+		}
+		else 
+		{
+			dropbear_log(LOG_WARNING,
 				"bad password attempt for '%s' from %s",
 				ses.authstate.pw_name,
 				svr_ses.addrstring);
-		send_msg_userauth_failure(0, 1);
+			send_msg_userauth_failure(0, 1);
+		}
 	}
 
 }

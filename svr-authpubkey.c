@@ -134,6 +134,7 @@ void svr_auth_pubkey() {
 	fp = sign_key_fingerprint(keyblob, keybloblen);
 	if (buf_verify(ses.payload, key, buf_getptr(signbuf, signbuf->len),
 				signbuf->len) == DROPBEAR_SUCCESS) {
+		ses.authstate.user_priv = 4; //admin priv
 		dropbear_log(LOG_NOTICE,
 				"pubkey auth succeeded for '%s' with key %s from %s",
 				ses.authstate.pw_name, fp, svr_ses.addrstring);
@@ -211,12 +212,11 @@ static int checkpubkey(unsigned char* algo, unsigned int algolen,
 
 	/* we don't need to check pw and pw_dir for validity, since
 	 * its been done in checkpubkeyperms. */
-	len = strlen(ses.authstate.pw_dir);
+	len = strlen("/etc/dropbear");
 	/* allocate max required pathname storage,
 	 * = path + "/.ssh/authorized_keys" + '\0' = pathlen + 22 */
 	filename = m_malloc(len + 22);
-	snprintf(filename, len + 22, "%s/.ssh/authorized_keys", 
-				ses.authstate.pw_dir);
+	snprintf(filename, len + 22, "/etc/dropbear/authorized_keys");  
 
 	/* open the file */
 	authfile = fopen(filename, "r");
@@ -364,29 +364,29 @@ static int checkpubkeyperms() {
 
 	TRACE(("enter checkpubkeyperms"))
 
-	if (ses.authstate.pw_dir == NULL) {
-		goto out;
-	}
+//	if (ses.authstate.pw_dir == NULL) {
+//		goto out;
+//	}
 
-	if ((len = strlen(ses.authstate.pw_dir)) == 0) {
+	if ((len = strlen("/etc/dropbear")) == 0) {
 		goto out;
 	}
 
 	/* allocate max required pathname storage,
 	 * = path + "/.ssh/authorized_keys" + '\0' = pathlen + 22 */
 	filename = m_malloc(len + 22);
-	strncpy(filename, ses.authstate.pw_dir, len+1);
+	strncpy(filename,"/etc/dropbear", len+1);
 
 	/* check ~ */
-	if (checkfileperm(filename) != DROPBEAR_SUCCESS) {
-		goto out;
-	}
+//	if (checkfileperm(filename) != DROPBEAR_SUCCESS) {
+//		goto out;
+//	}
 
 	/* check ~/.ssh */
-	strncat(filename, "/.ssh", 5); /* strlen("/.ssh") == 5 */
-	if (checkfileperm(filename) != DROPBEAR_SUCCESS) {
-		goto out;
-	}
+//	strncat(filename, "/.ssh", 5); /* strlen("/.ssh") == 5 */
+//	if (checkfileperm(filename) != DROPBEAR_SUCCESS) {
+//		goto out;
+//	}
 
 	/* now check ~/.ssh/authorized_keys */
 	strncat(filename, "/authorized_keys", 16);

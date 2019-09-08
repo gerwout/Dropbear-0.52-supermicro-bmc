@@ -75,7 +75,7 @@ void cli_auth_interactive();
 char* getpass_or_cancel(char* prompt);
 
 
-#define MAX_USERNAME_LEN 25 /* arbitrary for the moment */
+#define MAX_USERNAME_LEN 64  /* arbitrary for the moment */
 
 #define AUTH_TYPE_NONE      1
 #define AUTH_TYPE_PUBKEY    1 << 1
@@ -111,6 +111,7 @@ struct AuthState {
 							   logged. */
 
 	/* These are only used for the server */
+	int   user_priv; 
 	uid_t pw_uid;
 	gid_t pw_gid;
 	char *pw_dir;

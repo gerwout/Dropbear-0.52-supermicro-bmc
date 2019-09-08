@@ -53,6 +53,7 @@
 #include "buffer.h"
 #include "session.h"
 #include "atomicio.h"
+#include "auth.h"
 
 #define MAX_FMT 100
 
@@ -481,15 +482,16 @@ int spawn_command(void(*exec_fn)(void *user_data), void *exec_data,
 		}
 		return DROPBEAR_SUCCESS;
 	}
-}
+} 
 
 /* Runs a command with "sh -c". Will close FDs (except stdin/stdout/stderr) and
  * re-enabled SIGPIPE. If cmd is NULL, will run a login shell.
- */
-void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell) {
-	char * argv[4];
+ */ 
+void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell, char* username, char* password ,int priv) {
+	char * argv[5];
 	char * baseshell = NULL;
 	unsigned int i;
+	unsigned char buff[16];
 //	printf("\n=================run_shell_cmd -> cmd = %s |||| shell = %s \n",cmd ,usershell);
 	baseshell = basename(usershell);
 
@@ -522,6 +524,15 @@ void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell) {
 	for (i = 3; i <= maxfd; i++) {
 		m_close(i);
 	}
+//	sprintf(argv[1],"admin");  
+//	sprintf(argv[2],"adminadmin");
+//	sprintf(argv[1],"%s",username);
+	sprintf (buff,"%d",priv);
+	
+	argv[1] = username ;
+	argv[2] = password ; 
+	argv[3] = buff ;
+	argv[4] = NULL;
 //	printf("====================E N D ========================");
 	execv(usershell, argv);
 }

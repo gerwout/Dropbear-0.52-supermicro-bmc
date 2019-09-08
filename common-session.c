@@ -35,6 +35,9 @@
 #include "channel.h"
 #include "atomicio.h"
 #include "runopts.h"
+#include "type.h"
+#include "status.h"
+#include "OS_api.h" 
 
 static void checktimeouts();
 static long select_timeout();
@@ -386,7 +389,7 @@ static void checktimeouts() {
 
 	time_t now;
 
-	now = time(NULL);
+	now = os_time_get();
 	
 	if (ses.connect_time != 0 && now - ses.connect_time >= AUTH_TIMEOUT) {
 			dropbear_close("Timeout before auth");
@@ -449,16 +452,27 @@ void fill_passwd(const char* username) {
 	if (ses.authstate.pw_passwd)
 		m_free(ses.authstate.pw_passwd);
 
-	pw = getpwnam(username);
-	if (!pw) {
-		return;
-	}
+//	pw = getpwnam(username);
+//	if (!pw) {
+//		return;
+//	}
 	
-	ses.authstate.pw_uid = pw->pw_uid;
-	ses.authstate.pw_gid = pw->pw_gid;
-	ses.authstate.pw_name = m_strdup(pw->pw_name);
-	ses.authstate.pw_dir = m_strdup(pw->pw_dir);
-	ses.authstate.pw_shell = m_strdup(pw->pw_shell);
-	ses.authstate.pw_passwd = m_strdup(pw->pw_passwd);
+	
+//	make user for superuser
+//	ses.authstate.pw_uid = pw->pw_uid;
+	ses.authstate.pw_uid = 0;
+//	ses.authstate.pw_gid = pw->pw_gid;
+	ses.authstate.pw_gid = 0;
+//	ses.authstate.pw_name = m_strdup(pw->pw_name);
+	ses.authstate.pw_name = m_strdup(username);
+//	ses.authstate.pw_dir = m_strdup(pw->pw_dir);
+	ses.authstate.pw_dir = m_strdup("/\0");
+//	ses.authstate.pw_shell = m_strdup(pw->pw_shell);
+//  only /bin/sh on AST2050
+//	ses.authstate.pw_shell = "/tmp/msh/msh";
+	ses.authstate.pw_shell = m_strdup("/SMASH/msh\0");
+//	ses.authstate.pw_shell = "/bin/sh";
+	ses.authstate.pw_passwd = m_strdup(username);
+//	ses.authstate.pw_passwd = m_strdup("ATEN\0");
 }
 

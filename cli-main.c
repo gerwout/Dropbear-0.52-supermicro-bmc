@@ -40,7 +40,7 @@ int cli_main(int argc, char ** argv) {
 #else
 int main(int argc, char ** argv) {
 #endif
-
+ 
 	int sock_in, sock_out;
 	char* error = NULL;
 	char* hostandport;
@@ -110,7 +110,7 @@ static void cli_dropbear_exit(int exitcode, const char* format, va_list param) {
 	_dropbear_log(LOG_INFO, fmtbuf, param);
 
 	exit(exitcode);
-}
+} 
 
 static void cli_dropbear_log(int UNUSED(priority), 
 		const char* format, va_list param) {
@@ -128,7 +128,7 @@ static void exec_proxy_cmd(void *user_data_cmd) {
 	char *usershell;
 
 	usershell = m_strdup(get_user_shell());
-	run_shell_command(cmd, ses.maxfd, usershell);
+	run_shell_command(cmd, ses.maxfd, usershell, NULL, NULL,0xF);
 	dropbear_exit("Failed to run '%s'\n", cmd);
 }
 

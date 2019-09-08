@@ -176,16 +176,16 @@ void recv_msg_userauth_request() {
 #endif
 
 #ifdef ENABLE_SVR_PAM_AUTH
-	if (!svr_opts.noauthpass &&
-			!(svr_opts.norootpass && ses.authstate.pw_uid == 0) ) {
-		/* user wants to try password auth */
-		if (methodlen == AUTH_METHOD_PASSWORD_LEN &&
-				strncmp(methodname, AUTH_METHOD_PASSWORD,
-					AUTH_METHOD_PASSWORD_LEN) == 0) {
-			svr_auth_pam();
-			goto out;
-		}
-	}
+//	if (!svr_opts.noauthpass &&
+//			!(svr_opts.norootpass && ses.authstate.pw_uid == 0) ) {
+//		/* user wants to try password auth */
+//		if (methodlen == AUTH_METHOD_PASSWORD_LEN &&
+//				strncmp(methodname, AUTH_METHOD_PASSWORD,
+//					AUTH_METHOD_PASSWORD_LEN) == 0) {
+//			svr_auth_pam();
+//			goto out;
+//		}
+//	}
 #endif
 
 #ifdef ENABLE_SVR_PUBKEY_AUTH
@@ -246,12 +246,12 @@ static int checkusername(unsigned char *username, unsigned int userlen) {
 	}
 
 	/* check for non-root if desired */
-	if (svr_opts.norootlogin && ses.authstate.pw_uid == 0) {
-		TRACE(("leave checkusername: root login disabled"))
-		dropbear_log(LOG_WARNING, "root login rejected");
-		send_msg_userauth_failure(0, 1);
-		return DROPBEAR_FAILURE;
-	}
+//	if (svr_opts.norootlogin && ses.authstate.pw_uid == 0) {
+//		TRACE(("leave checkusername: root login disabled"))
+//		dropbear_log(LOG_WARNING, "root login rejected");
+//		send_msg_userauth_failure(0, 1);
+//		return DROPBEAR_FAILURE;
+//	}
 
 	/* check for an empty password */
 	if (ses.authstate.pw_passwd[0] == '\0') {
